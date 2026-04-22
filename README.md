@@ -134,6 +134,13 @@ Use these files as the source of truth before deploying:
    `npm run netlify:manual:deploy`
    `npm run netlify:smoke`
 
+### GitHub Auto Deploy
+
+- The repository also supports GitHub Actions deployment to Netlify.
+- On every push to `main`, GitHub Actions runs the same verified manual release flow:
+  `npm run netlify:manual:release`
+- The workflow can also be triggered manually from the GitHub Actions tab.
+
 ### Important Caveat
 
 This repository uses a documented Netlify runtime workaround for Next.js 16. The post-build shim makes SSR and route handlers work on the current site, but ISR/data-cache behavior should still be treated as non-ideal until the app is moved to a cleaner hosting flow or the native runtime path is fixed.
