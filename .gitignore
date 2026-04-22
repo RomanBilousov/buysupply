@@ -37,6 +37,9 @@ yarn-error.log*
 # local deployment state
 .netlify
 
+# local project notes
+.local/
+
 # vercel
 .vercel
 
