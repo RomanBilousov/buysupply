@@ -48,7 +48,6 @@ These keys were imported from the local env file into the Netlify project:
 - The app deploys successfully without a real `RESEND_API_KEY`, but sell-enquiry emails will not work correctly until the production value is added.
 - Admin credentials and session secret were replaced with stronger values before importing to Netlify.
 - There is no Git-based CI configured yet. Deploys are currently manual via Netlify CLI.
-- GitHub Actions can run the same release flow on push to `main` or by manual dispatch, using repository secrets for runtime env values.
 - `DATABASE_URL` was verified locally against the project env and the current database responds successfully.
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are part of the active production runtime and must stay aligned with the same Supabase project.
 - Standard `netlify deploy --build --prod` was not enough for this Next.js 16 app. The working flow is:
