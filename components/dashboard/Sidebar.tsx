@@ -9,8 +9,7 @@ import {
   Settings,
   PlusCircle,
   ChevronRight,
-  X,
-  Menu
+  ChevronLeft,
 } from "lucide-react";
 
 type NavChild = {
@@ -50,6 +49,7 @@ const navItems: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
 
   const isActive = (href: string) => pathname === href;
   const isParentActive = (children?: NavChild[]) =>
@@ -66,13 +66,12 @@ export function Sidebar() {
           }`}
       >
         {collapsed ? (
-          /* Hamburger icon when collapsed */
           <button
             onClick={() => setCollapsed(false)}
             title="Open menu"
             className="w-8 h-8 flex items-center justify-center rounded-lg border border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors"
           >
-            <Menu className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4" />
           </button>
         ) : (
           <>
@@ -90,10 +89,10 @@ export function Sidebar() {
             {/* X / Close button */}
             <button
               onClick={() => setCollapsed(true)}
-              title="Collapse menu"
+              title="Collapse sidebar"
               className="w-6 h-6 flex items-center justify-center rounded-md border border-zinc-700/50 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-colors shrink-0"
             >
-              <X className="w-3.5 h-3.5" />
+              <ChevronLeft className="w-3.5 h-3.5" />
             </button>
           </>
         )}
@@ -113,27 +112,41 @@ export function Sidebar() {
 
             if (item.children) {
               const parentActive = isParentActive(item.children);
+              const childrenOpen = parentActive || productsOpen;
               return (
                 <li key={item.label}>
-                  <div
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm cursor-default transition-colors ${parentActive
-                        ? "text-white"
-                        : "text-zinc-500 hover:text-zinc-300"
-                      } ${collapsed ? "justify-center px-2" : ""}`}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (collapsed) {
+                        setCollapsed(false);
+                        setProductsOpen(true);
+                        return;
+                      }
+                      setProductsOpen((current) => !current);
+                    }}
+                    className={`flex w-full items-center gap-3 rounded-lg text-sm transition-all ${
+                      collapsed ? "justify-center px-2 py-2" : "px-3 py-2.5"
+                    } ${
+                      parentActive || childrenOpen
+                        ? "bg-zinc-800/60 text-white"
+                        : "text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/50"
+                    }`}
                     title={collapsed ? item.label : undefined}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
                     {!collapsed && (
                       <>
-                        <span className="flex-1 font-medium">{item.label}</span>
+                        <span className="flex-1 text-left font-medium">{item.label}</span>
                         <ChevronRight
-                          className={`w-3 h-3 transition-transform ${parentActive ? "rotate-90 text-indigo-400" : ""
+                          className={`w-3 h-3 shrink-0 transition-transform ${
+                            childrenOpen ? "rotate-90 text-indigo-400" : "text-zinc-600"
                             }`}
                         />
                       </>
                     )}
-                  </div>
-                  {!collapsed && (
+                  </button>
+                  {!collapsed && childrenOpen && (
                     <ul className="ml-4 mt-0.5 space-y-0.5 border-l border-zinc-800 pl-3">
                       {item.children.map((child) => {
                         const ChildIcon = child.icon;
@@ -181,32 +194,6 @@ export function Sidebar() {
           })}
         </ul>
       </nav>
-
-      {/* User Profile */}
-      <div className="p-3 border-t border-zinc-800/60 shrink-0">
-        <div
-          className={`flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-zinc-800/50 transition-colors cursor-pointer ${collapsed ? "justify-center px-0" : ""
-            }`}
-          title={collapsed ? "Admin User" : undefined}
-        >
-          <div className="w-7 h-7 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
-            A
-          </div>
-          {!collapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-zinc-200 truncate">
-                  Admin User
-                </p>
-                <p className="text-[10px] text-zinc-500 truncate">
-                  admin@store.com
-                </p>
-              </div>
-              <ChevronRight className="w-3 h-3 text-zinc-600 shrink-0" />
-            </>
-          )}
-        </div>
-      </div>
     </aside>
   );
 }

@@ -111,7 +111,12 @@ export default function ProductDetailPage() {
               onClick={() => images.length > 0 && setLightbox(true)}
             >
               {currentImg ? (
-                <HeicImage src={currentImg.url} alt={product.name} className="w-full h-full object-contain" />
+                <HeicImage
+                  src={currentImg.url}
+                  alt={product.name}
+                  className="w-full h-full object-contain"
+                  loading="eager"
+                />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ImageOff className="w-12 h-12 text-white/10" />

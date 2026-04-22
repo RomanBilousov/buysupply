@@ -57,6 +57,21 @@ export interface DashboardOverview {
   recentProducts: ProductRecord[];
 }
 
+export interface DashboardIssueProduct {
+  id: number;
+  name: string;
+  updatedAt: Date;
+}
+
+export interface DashboardNotificationSummary {
+  totalProducts: number;
+  draftProducts: number;
+  uncategorizedProducts: DashboardIssueProduct[];
+  uncategorizedCount: number;
+  productsWithoutImages: DashboardIssueProduct[];
+  productsWithoutImagesCount: number;
+}
+
 export interface ProductInputImage {
   url: string;
   key: string;
@@ -701,6 +716,84 @@ export async function getDashboardOverview(): Promise<DashboardOverview> {
     archivedProducts: counts.archivedProducts,
     totalCategories: categoriesCountResult.rows[0]?.totalCategories ?? 0,
     recentProducts: recentProductsResult.rows.map(mapProductRow),
+  };
+}
+
+export async function getDashboardNotificationSummary(): Promise<DashboardNotificationSummary> {
+  const [
+    countsResult,
+    uncategorizedCountResult,
+    uncategorizedProductsResult,
+    productsWithoutImagesCountResult,
+    productsWithoutImagesResult,
+  ] = await Promise.all([
+    query<{
+      totalProducts: number;
+      draftProducts: number;
+    }>(
+      `
+        SELECT
+          COUNT(*)::int AS "totalProducts",
+          COUNT(*) FILTER (WHERE "status" = 'draft')::int AS "draftProducts"
+        FROM "Product"
+      `,
+    ),
+    query<{ uncategorizedCount: number }>(
+      `
+        SELECT COUNT(*)::int AS "uncategorizedCount"
+        FROM "Product"
+        WHERE "categoryId" IS NULL
+      `,
+    ),
+    query<DashboardIssueProduct>(
+      `
+        SELECT
+          "id",
+          "name",
+          "updatedAt" AS "updatedAt"
+        FROM "Product"
+        WHERE "categoryId" IS NULL
+        ORDER BY "updatedAt" DESC, "id" DESC
+        LIMIT 3
+      `,
+    ),
+    query<{ productsWithoutImagesCount: number }>(
+      `
+        SELECT COUNT(*)::int AS "productsWithoutImagesCount"
+        FROM "Product" p
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM "ProductImage" pi
+          WHERE pi."productId" = p."id"
+        )
+      `,
+    ),
+    query<DashboardIssueProduct>(
+      `
+        SELECT
+          p."id",
+          p."name",
+          p."updatedAt" AS "updatedAt"
+        FROM "Product" p
+        WHERE NOT EXISTS (
+          SELECT 1
+          FROM "ProductImage" pi
+          WHERE pi."productId" = p."id"
+        )
+        ORDER BY p."updatedAt" DESC, p."id" DESC
+        LIMIT 3
+      `,
+    ),
+  ]);
+
+  return {
+    totalProducts: countsResult.rows[0]?.totalProducts ?? 0,
+    draftProducts: countsResult.rows[0]?.draftProducts ?? 0,
+    uncategorizedProducts: uncategorizedProductsResult.rows,
+    uncategorizedCount: uncategorizedCountResult.rows[0]?.uncategorizedCount ?? 0,
+    productsWithoutImages: productsWithoutImagesResult.rows,
+    productsWithoutImagesCount:
+      productsWithoutImagesCountResult.rows[0]?.productsWithoutImagesCount ?? 0,
   };
 }
 

@@ -28,6 +28,8 @@ interface PreviewImage {
 }
 
 const MAX_FILES = 8;
+const HEIC_CONVERSION_ERROR =
+  "HEIC conversion failed. Please upload the image as JPG, PNG, or WEBP instead.";
 
 async function uploadImages(files: File[]) {
   const formData = new FormData();
@@ -127,7 +129,6 @@ export function ImageUpload({ onChange }: ImageUploadProps) {
 
   const handleUpload = useCallback(
     async (files: File[]) => {
-      setUploadFeedback("");
       const hasNoExistingPreviews = previewsRef.current.length === 0;
 
       const newPreviews: PreviewImage[] = files.map((file, i) => ({
@@ -190,24 +191,27 @@ export function ImageUpload({ onChange }: ImageUploadProps) {
 
     if (!isHeic) return file;
 
-    try {
-      const heic2any = (await import("heic2any")).default;
-      const blob = (await heic2any({
-        blob: file,
-        toType: "image/jpeg",
-        quality: 0.9,
-      })) as Blob;
-      const newName = file.name
-        .replace(/\.heic$/i, ".jpg")
-        .replace(/\.heif$/i, ".jpg");
-      return new File([blob], newName, { type: "image/jpeg" });
-    } catch (err) {
-      console.error("HEIC conversion failed:", err);
-      return file;
+    const heic2any = (await import("heic2any")).default;
+    const converted = await heic2any({
+      blob: file,
+      toType: "image/jpeg",
+      quality: 0.9,
+    });
+
+    const blob = Array.isArray(converted) ? converted[0] : converted;
+    if (!(blob instanceof Blob)) {
+      throw new Error(HEIC_CONVERSION_ERROR);
     }
+
+    const newName = file.name
+      .replace(/\.heic$/i, ".jpg")
+      .replace(/\.heif$/i, ".jpg");
+    return new File([blob], newName, { type: "image/jpeg" });
   };
 
   const handleFiles = async (fileList: FileList | File[]) => {
+    setUploadFeedback("");
+
     const raw = Array.from(fileList).filter(
       (f) =>
         f.type.startsWith("image/") ||
@@ -232,8 +236,34 @@ export function ImageUpload({ onChange }: ImageUploadProps) {
       setUploadFeedback("");
     }
 
-    const files = await Promise.all(limitedFiles.map(convertHeicToJpeg));
-    handleUpload(files);
+    const preparedFiles = await Promise.allSettled(
+      limitedFiles.map(async (file) => {
+        try {
+          return await convertHeicToJpeg(file);
+        } catch (err) {
+          console.error("HEIC conversion failed:", err);
+          throw new Error(`${file.name}: ${HEIC_CONVERSION_ERROR}`);
+        }
+      })
+    );
+
+    const files = preparedFiles.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : []
+    );
+
+    const conversionErrors = preparedFiles.flatMap((result) =>
+      result.status === "rejected" ? [result.reason instanceof Error ? result.reason.message : HEIC_CONVERSION_ERROR] : []
+    );
+
+    if (conversionErrors.length > 0) {
+      setUploadFeedback(conversionErrors[0]);
+    }
+
+    if (files.length === 0) {
+      return;
+    }
+
+    void handleUpload(files);
   };
 
   const handleRemove = (id: string) => {
@@ -388,7 +418,7 @@ export function ImageUpload({ onChange }: ImageUploadProps) {
               }
             </p>
             <p className="text-xs text-zinc-600 mt-1">
-              PNG, JPG, WEBP, HEIC · Up to 8MB each · Max {MAX_FILES} images · HEIC auto-converted
+              PNG, JPG, WEBP, HEIC · Up to 8MB each · Max {MAX_FILES} images · HEIC converted to JPG before upload
             </p>
           </div>
         </div>
