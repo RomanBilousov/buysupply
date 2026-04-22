@@ -1,22 +1,42 @@
 import { ProductUploadForm } from "@/components/dashboard/ProductUploadForm";
+import { getAdminProductCategoryBySlug } from "@/lib/admin-product-categories";
 
-export default function NewProductPage() {
+type NewProductPageProps = {
+  searchParams: Promise<{
+    category?: string | string[] | undefined;
+  }>;
+};
+
+export default async function NewProductPage({ searchParams }: NewProductPageProps) {
+  const resolvedSearchParams = await searchParams;
+  const categoryParam = Array.isArray(resolvedSearchParams.category)
+    ? resolvedSearchParams.category[0]
+    : resolvedSearchParams.category;
+  const category = getAdminProductCategoryBySlug(categoryParam);
+
   return (
     <div className="max-w-5xl mx-auto">
-      {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-zinc-500 mb-3">
           <span>Products</span>
+          {category && (
+            <>
+              <span>/</span>
+              <span>{category.label}</span>
+            </>
+          )}
           <span>/</span>
-          <span className="text-zinc-300">Add New</span>
+          <span className="text-zinc-300">Add Product</span>
         </div>
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-white tracking-tight">
-              Add New Product
+              Add Product
             </h1>
             <p className="text-zinc-500 text-sm mt-1">
-              Fill in the details below to list a new product in your store.
+              {category
+                ? `${category.label} is preselected based on the category you opened. You can still change it below.`
+                : "Fill in the details below to list a new product in your store."}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -40,7 +60,7 @@ export default function NewProductPage() {
         </div>
       </div>
 
-      <ProductUploadForm />
+      <ProductUploadForm initialCategorySlug={category?.slug} />
     </div>
   );
 }

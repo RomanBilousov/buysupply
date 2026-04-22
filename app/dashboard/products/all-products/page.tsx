@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight, Loader2, AlertCircle,
   Package, Tag, RefreshCw,
 } from "lucide-react";
+import { getAdminProductCategoryBySlug } from "@/lib/admin-product-categories";
 import { getProductImagePlaceholderUrl } from "@/lib/product-image-placeholder";
 
 interface ProductImage {
@@ -55,6 +56,7 @@ function AllProductsPageContent() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const activeCategory = getAdminProductCategoryBySlug(searchParams.get("category"));
   const querySearch = searchParams.get("search") ?? "";
   const queryStatus = searchParams.get("status") ?? "";
   const queryPage = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10) || 1);
@@ -108,6 +110,7 @@ function AllProductsPageContent() {
       const params = new URLSearchParams({ page: String(page), limit: "12" });
       if (debouncedSearch) params.set("search", debouncedSearch);
       if (statusFilter) params.set("status", statusFilter);
+      if (activeCategory?.slug) params.set("slug", activeCategory.slug);
 
       const res = await fetch(`/api/product?${params}`);
       const data = await res.json();
@@ -119,7 +122,7 @@ function AllProductsPageContent() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, page, statusFilter]);
+  }, [activeCategory?.slug, debouncedSearch, page, statusFilter]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
@@ -179,6 +182,15 @@ function AllProductsPageContent() {
   const totalActive = products.filter((p) => p.status === "active").length;
   const totalDraft = products.filter((p) => p.status === "draft").length;
   const totalArchived = products.filter((p) => p.status === "archived").length;
+  const addProductHref = activeCategory
+    ? `/dashboard/products/new?category=${activeCategory.slug}`
+    : "/dashboard/products/new";
+  const pageTitle = activeCategory ? activeCategory.label : "All Products";
+  const pageDescription = activeCategory
+    ? `${pagination ? pagination.total : 0} products in ${activeCategory.label.toLowerCase()}`
+    : pagination
+      ? `${pagination.total} products in your catalogue`
+      : "Manage your product catalogue";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-10">
@@ -186,9 +198,9 @@ function AllProductsPageContent() {
       {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-white tracking-tight">All Products</h1>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">{pageTitle}</h1>
           <p className="text-zinc-500 text-sm mt-1">
-            {pagination ? `${pagination.total} products in your catalogue` : "Manage your product catalogue"}
+            {pageDescription}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -199,7 +211,7 @@ function AllProductsPageContent() {
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
           </button>
           <Link
-            href="/dashboard/products/new"
+            href={addProductHref}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-all shadow-lg shadow-indigo-900/30"
           >
             <Plus className="w-4 h-4" />
@@ -288,7 +300,7 @@ function AllProductsPageContent() {
           </div>
           {!searchInput && !statusFilter && (
             <Link
-              href="/dashboard/products/new"
+              href={addProductHref}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-all"
             >
               <Plus className="w-4 h-4" />Add your first product

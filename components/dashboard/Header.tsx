@@ -132,7 +132,7 @@ export function Header() {
 
     const nextSearch = searchValue.trim();
     const params = new URLSearchParams(
-      pathname === PRODUCTS_ROUTE ? searchParamsString : "",
+      pathname.startsWith("/dashboard/products") ? searchParamsString : "",
     );
 
     if (nextSearch) {

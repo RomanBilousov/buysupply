@@ -1,16 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
   Package,
   Settings,
-  PlusCircle,
   ChevronRight,
   ChevronLeft,
+  Tag,
 } from "lucide-react";
+import { ADMIN_PRODUCT_CATEGORIES, getAdminProductCategoryBySlug } from "@/lib/admin-product-categories";
 
 type NavChild = {
   label: string;
@@ -34,10 +35,11 @@ const navItems: NavItem[] = [
   {
     label: "Products",
     icon: Package,
-    children: [
-      { label: "All Products", href: "/dashboard/products/all-products", icon: Package },
-      { label: "Add New", href: "/dashboard/products/new", icon: PlusCircle },
-    ],
+    children: ADMIN_PRODUCT_CATEGORIES.map((category) => ({
+      label: category.label,
+      href: `/dashboard/products/all-products?category=${category.slug}`,
+      icon: category.slug === "consumables" ? Tag : Package,
+    })),
   },
   {
     label: "Settings",
@@ -48,12 +50,33 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [collapsed, setCollapsed] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const currentCategorySlug =
+    getAdminProductCategoryBySlug(searchParams.get("category"))?.slug ?? "";
 
-  const isActive = (href: string) => pathname === href;
-  const isParentActive = (children?: NavChild[]) =>
-    children?.some((c) => pathname.startsWith(c.href)) ?? false;
+  const isActive = (href: string) => {
+    const [targetPath, targetQuery] = href.split("?");
+    if (pathname !== targetPath) {
+      return false;
+    }
+
+    if (!targetQuery) {
+      return true;
+    }
+
+    const targetParams = new URLSearchParams(targetQuery);
+    const targetCategory = targetParams.get("category");
+
+    if (targetCategory) {
+      return currentCategorySlug === targetCategory;
+    }
+
+    return true;
+  };
+
+  const isParentActive = () => pathname.startsWith("/dashboard/products");
 
   return (
     <aside
@@ -111,7 +134,7 @@ export function Sidebar() {
             const Icon = item.icon;
 
             if (item.children) {
-              const parentActive = isParentActive(item.children);
+              const parentActive = isParentActive();
               const childrenOpen = parentActive || productsOpen;
               return (
                 <li key={item.label}>

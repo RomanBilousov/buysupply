@@ -9,7 +9,11 @@ export default function Layout({
 }) {
   return (
     <div className="flex h-screen bg-[#0f0f11] overflow-hidden">
-      <Sidebar />
+      <Suspense
+        fallback={<div className="h-screen w-60 shrink-0 border-r border-zinc-800/60 bg-[#0c0c0f]" />}
+      >
+        <Sidebar />
+      </Suspense>
 
       <div className="flex flex-col flex-1 overflow-hidden">
         <Suspense fallback={<div className="h-16 shrink-0 border-b border-zinc-800/60 bg-[#0c0c0f]/80" />}>

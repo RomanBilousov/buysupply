@@ -4,6 +4,7 @@ import { useState, useEffect, type BaseSyntheticEvent } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { ImageUpload, type UploadedImage } from "./ImageUpload";
+import { type AdminProductCategorySlug } from "@/lib/admin-product-categories";
 import {
   Package, DollarSign, Layers, Info, AlertCircle,
   ChevronDown, Loader2, CheckCircle2, Tag, Link2,
@@ -98,13 +99,25 @@ function Card({ title, icon: Icon, children, className = "" }: {
   );
 }
 
-export function ProductUploadForm() {
+export function ProductUploadForm({
+  initialCategorySlug,
+}: {
+  initialCategorySlug?: AdminProductCategorySlug;
+}) {
   const router = useRouter();
   const [submitState, setSubmitState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [submitError, setSubmitError] = useState("");
   const [categories, setCategories] = useState<Category[]>([]);
 
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<ProductFormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors },
+  } = useForm<ProductFormData>({
     defaultValues: { status: "draft", images: [], categoryId: "" },
   });
 
@@ -114,6 +127,19 @@ export function ProductUploadForm() {
       .then((d) => setCategories(d.data || []))
       .catch(() => { });
   }, []);
+
+  useEffect(() => {
+    if (!initialCategorySlug || categories.length === 0 || getValues("categoryId")) {
+      return;
+    }
+
+    const matchedCategory = categories.find((category) => category.slug === initialCategorySlug);
+    if (!matchedCategory) {
+      return;
+    }
+
+    setValue("categoryId", String(matchedCategory.id), { shouldDirty: false, shouldValidate: true });
+  }, [categories, getValues, initialCategorySlug, setValue]);
 
   const descriptionValue = watch("description") || "";
   const watchedImages = watch("images") || [];
@@ -158,7 +184,13 @@ export function ProductUploadForm() {
       }
 
       setSubmitState("success");
-      setTimeout(() => router.push("/dashboard/products/all-products"), 1500);
+      const selectedCategory = categories.find(
+        (category) => category.id === Number.parseInt(data.categoryId, 10),
+      );
+      const redirectUrl = selectedCategory
+        ? `/dashboard/products/all-products?category=${selectedCategory.slug}`
+        : "/dashboard/products/all-products";
+      setTimeout(() => router.push(redirectUrl), 1500);
     } catch (err) {
       setSubmitState("error");
       setSubmitError(err instanceof Error ? err.message : "Something went wrong");

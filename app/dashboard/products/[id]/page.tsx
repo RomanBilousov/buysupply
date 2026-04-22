@@ -42,6 +42,9 @@ export default function ProductEditPage() {
     const [editedImages, setEditedImages] = useState<ProductImage[]>([]);
     const [draggedImgId, setDraggedImgId] = useState<number | null>(null);
     const [dragOverImgId, setDragOverImgId] = useState<number | null>(null);
+    const categoryListHref = product?.category?.slug
+        ? `/dashboard/products/all-products?category=${product.category.slug}`
+        : "/dashboard/products/all-products";
 
     // Editable fields
     const [name, setName] = useState("");
@@ -184,7 +187,7 @@ export default function ProductEditPage() {
             if (!res.ok) {
                 throw new Error("Failed to delete");
             }
-            router.push("/dashboard/products/all-products");
+            router.push(categoryListHref);
         } catch {
             alert("Failed to delete");
             setDeleting(false);
@@ -229,7 +232,7 @@ export default function ProductEditPage() {
             {/* ── Header ── */}
             <div className="flex items-center justify-between gap-4 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <Link href="/dashboard/products/all-products"
+                    <Link href={categoryListHref}
                         className="w-8 h-8 rounded-lg border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white hover:border-zinc-500 transition-all">
                         <ChevronLeft className="w-4 h-4" />
                     </Link>
