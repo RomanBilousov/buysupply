@@ -7,7 +7,7 @@ import { ImageUpload, type UploadedImage } from "./ImageUpload";
 import { type AdminProductCategorySlug } from "@/lib/admin-product-categories";
 import {
   Package, DollarSign, Layers, Info, AlertCircle,
-  ChevronDown, Loader2, CheckCircle2, Tag, Link2,
+  ChevronDown, CheckCircle2, Tag, Link2,
 } from "lucide-react";
 
 type ProductFormData = {
@@ -197,7 +197,6 @@ export function ProductUploadForm({
     }
   };
 
-  const isLoading = submitState === "loading";
   const isSuccess = submitState === "success";
 
   const checklist = [
@@ -335,19 +334,6 @@ export function ProductUploadForm({
               <CheckCircle2 className="w-4 h-4 shrink-0" />Product created! Redirecting...
             </div>
           )}
-
-          <div className="flex flex-col gap-2">
-            <button type="submit" disabled={isLoading || isSuccess}
-              data-submit-intent="publish"
-              className="w-full py-2.5 text-sm font-semibold bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-900/30">
-              {isLoading ? <><Loader2 className="w-4 h-4 animate-spin" />Saving...</> : isSuccess ? <><CheckCircle2 className="w-4 h-4" />Saved!</> : "Publish Product"}
-            </button>
-            <button type="submit" disabled={isLoading || isSuccess}
-              data-submit-intent="draft"
-              className="w-full py-2.5 text-sm font-medium border border-zinc-700 hover:border-zinc-600 disabled:opacity-60 text-zinc-400 hover:text-white rounded-xl transition-all">
-              Save as Draft
-            </button>
-          </div>
         </div>
       </div>
     </form>

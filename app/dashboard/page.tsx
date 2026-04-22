@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Package, PlusCircle, Settings, Tag } from "lucide-react";
+import { ArrowRight, Package } from "lucide-react";
 import { getDashboardOverview } from "@/lib/catalog-store";
 import { getProductImagePlaceholderUrl } from "@/lib/product-image-placeholder";
 
@@ -16,7 +16,6 @@ export default async function DashboardPage() {
     totalProducts,
     activeProducts,
     draftProducts,
-    archivedProducts,
     totalCategories,
     recentProducts,
   } = await getDashboardOverview();
@@ -30,20 +29,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-10">
-      <div className="flex items-start justify-between gap-4">
+      <div>
         <div>
           <h1 className="text-2xl font-semibold text-white tracking-tight">Overview</h1>
           <p className="text-zinc-500 text-sm mt-1">
             Quick view of your catalogue and the latest product updates.
           </p>
         </div>
-        <Link
-          href="/dashboard/products/new"
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition-all shadow-lg shadow-indigo-900/30"
-        >
-          <PlusCircle className="w-4 h-4" />
-          Add Product
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -58,19 +50,13 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1.6fr_1fr] gap-6">
+      <div className="grid grid-cols-1 gap-6">
         <section className="bg-[#13131a] border border-zinc-800/70 rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-zinc-800/70">
+          <div className="px-5 py-4 border-b border-zinc-800/70">
             <div>
               <h2 className="text-sm font-semibold text-zinc-200">Recent Products</h2>
               <p className="text-xs text-zinc-500 mt-1">Latest items updated in the catalogue.</p>
             </div>
-            <Link
-              href="/dashboard/products/all-products"
-              className="text-xs text-zinc-400 hover:text-white transition-colors"
-            >
-              View all
-            </Link>
           </div>
 
           {recentProducts.length === 0 ? (
@@ -125,58 +111,6 @@ export default async function DashboardPage() {
               })}
             </div>
           )}
-        </section>
-
-        <section className="bg-[#13131a] border border-zinc-800/70 rounded-2xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-zinc-800/70">
-            <h2 className="text-sm font-semibold text-zinc-200">Quick Links</h2>
-            <p className="text-xs text-zinc-500 mt-1">Common admin actions.</p>
-          </div>
-
-          <div className="p-4 space-y-3">
-            <Link
-              href="/dashboard/products/all-products"
-              className="flex items-center gap-3 rounded-xl border border-zinc-800/70 px-4 py-3 hover:border-zinc-700 hover:bg-zinc-900/30 transition-all"
-            >
-              <Package className="w-4 h-4 text-zinc-400" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-zinc-200">All Products</p>
-                <p className="text-xs text-zinc-500">Manage the full catalogue</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/dashboard/products/new"
-              className="flex items-center gap-3 rounded-xl border border-zinc-800/70 px-4 py-3 hover:border-zinc-700 hover:bg-zinc-900/30 transition-all"
-            >
-              <PlusCircle className="w-4 h-4 text-zinc-400" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-zinc-200">Add New Product</p>
-                <p className="text-xs text-zinc-500">Create a new listing</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/dashboard/settings"
-              className="flex items-center gap-3 rounded-xl border border-zinc-800/70 px-4 py-3 hover:border-zinc-700 hover:bg-zinc-900/30 transition-all"
-            >
-              <Settings className="w-4 h-4 text-zinc-400" />
-              <div className="min-w-0">
-                <p className="text-sm font-medium text-zinc-200">Settings</p>
-                <p className="text-xs text-zinc-500">Update login credentials</p>
-              </div>
-            </Link>
-
-            <div className="rounded-xl border border-zinc-800/70 px-4 py-3">
-              <div className="flex items-center gap-3">
-                <Tag className="w-4 h-4 text-zinc-400" />
-                <div>
-                  <p className="text-sm font-medium text-zinc-200">Archive Status</p>
-                  <p className="text-xs text-zinc-500">{archivedProducts} archived products</p>
-                </div>
-              </div>
-            </div>
-          </div>
         </section>
       </div>
     </div>
