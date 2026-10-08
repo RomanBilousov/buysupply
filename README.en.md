@@ -1,3 +1,7 @@
+[Русский README](README.md)
+
+> This English README is preserved for external readers. Commands and repository structure below were checked against source commit `f6712315c84c4c38d3130abebb479642d5108e83`. Dated production, hosting, contact, and acceptance claims still require fresh verification before being treated as current.
+
 # BuySupply
 
 BuySupply is a UK-based e-commerce platform specializing in photocopiers, printers, and consumables. The platform allows customers to buy, sell, and recycle office equipment with nationwide collection and fast delivery.
